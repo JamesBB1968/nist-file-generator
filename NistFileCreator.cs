@@ -1,43 +1,41 @@
-// Updated NistFileCreator.cs to correct CNT field and record structure
-
-// This file contains the generation logic for NIST files.
-
 public class NistFileCreator
 {
-    // Other methods and properties...
+    // Constants for field separator and record separator
+    private const byte FS = 0x1C; // Field Separator
+    private const byte RS = 0x1E; // Record Separator
 
-    public void WriteRecords()
+    public byte[] BuildType1RecordBytes(string fieldNumber, string fieldName, string fieldValue)
     {
-        // Declare CNT:3 for Type 1 record
-        WriteRecord("Type 1");
-        WriteField("CNT", "3");
-
-        // Write Type 2 records
-        for (int i = 0; i < numberOfType2Records; i++)
-        {
-            WriteRecord("Type 2");
-            WriteSeparator(); // Ensure correct record separator used
-        }
-
-        // Write Type 10 records
-        for (int i = 0; i < numberOfType10Records; i++)
-        {
-            WriteRecord("Type 10");
-            WriteSeparator(); // Ensure correct record separator used
-        }
-
-        // Call to finalize the writing
-        FinalizeFile();
+        return CreateRecordBytes("1", fieldNumber, fieldName, fieldValue);
     }
 
-    private void WriteSeparator()
+    public byte[] BuildType2RecordBytes(string fieldNumber, string fieldName, string fieldValue)
     {
-        // Logic for writing the correct record separator
-        // E.g., Console.WriteLine("\n");
+        return CreateRecordBytes("2", fieldNumber, fieldName, fieldValue, true);
     }
 
-    private void FinalizeFile()
+    public byte[] BuildType10HeaderBytes(string fieldNumber, string fieldName, string fieldValue)
     {
-        // Logic to finalize writing the NIST file
+        return CreateRecordBytes("10", fieldNumber, fieldName, fieldValue, true);
+    }
+
+    private byte[] CreateRecordBytes(string recordType, string fieldNumber, string fieldName, string fieldValue, bool addRecordSeparator = false)
+    {
+        // Create the record components
+        var record = new List<byte>();
+        record.AddRange(System.Text.Encoding.ASCII.GetBytes(recordType));
+        record.Add(FS);
+        record.AddRange(System.Text.Encoding.ASCII.GetBytes(fieldNumber));
+        record.Add(FS);
+        record.AddRange(System.Text.Encoding.ASCII.GetBytes(fieldName));
+        record.Add(FS);
+        record.AddRange(System.Text.Encoding.ASCII.GetBytes(fieldValue));
+
+        if (addRecordSeparator)
+        {
+            record.Add(RS);
+        }
+
+        return record.ToArray();
     }
 }
